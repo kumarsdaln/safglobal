@@ -13,10 +13,12 @@ from .crmviews.CRRView import *
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
+    TokenVerifyView,
 )
 urlpatterns = [
-    path('', views.index, name='crm.index'),
+    # path('', views.index, name='crm.index'),
     path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('login/', obtain_auth_token, name='crm.login'),
     path('countries/', views.CountriesList.as_view(), name='crm.counties.list'),
@@ -26,6 +28,7 @@ urlpatterns = [
     path('offices/', include([
         path('', OfficesList.as_view(), name='crm.offices.list'),
         path('create/', OfficesCreate.as_view(), name='crm.offices.create'),
+        path('<int:pk>/', OfficesDetails.as_view(), name='crm.offices.details'),
         path('<int:pk>/edit/', OfficesUpdate.as_view(), name='crm.offices.edit'),
         path('<int:pk>/delete/', OfficesDelete.as_view(), name='crm.offices.delete'),
         path('users/', include([
@@ -39,6 +42,7 @@ urlpatterns = [
     path('hubs/', include([
         path('', HubsList.as_view(), name='crm.hubs.list'),
         path('create/', HubsCreate.as_view(), name='crm.hubs.create'),
+        path('<int:pk>/', HubsDetails.as_view(), name='crm.hubs.deatils'),
         path('<int:pk>/edit/', HubsUpdate.as_view(), name='crm.hubs.edit'),
         path('<int:pk>/delete/', HubsDelete.as_view(), name='crm.hubs.delete'),
         path('users/', include([
@@ -57,6 +61,7 @@ urlpatterns = [
     path('agents/', include([
         path('', AgentsList.as_view(), name='crm.agents.list'),
         path('create/', AgentsCreate.as_view(), name='crm.agents.create'),
+        path('<int:pk>/', AgentsDetails.as_view(), name='crm.agents.details'),
         path('<int:pk>/edit/', AgentsUpdate.as_view(), name='crm.agents.edit'),
         path('<int:pk>/delete/', AgentsDelete.as_view(), name='crm.agents.delete'),
     ])),

@@ -8,16 +8,28 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from django.urls import get_resolver
+from django.urls import get_resolver, URLPattern, URLResolver
 
 # Create your views here.
 def index(request):
-    url_patterns = []
+    urls = []
+
+    def collect_urls(url_patterns, prefix=''):
+        for pattern in url_patterns:
+            if isinstance(pattern, URLResolver):
+                collect_urls(pattern.url_patterns, prefix + str(pattern.pattern))
+            elif isinstance(pattern, URLPattern):
+                urls.append(prefix + str(pattern.pattern))
+
     resolver = get_resolver()
-    for url_pattern in resolver.url_patterns:
-        print(url_pattern.pattern)
-        url_patterns.append(url_pattern.pattern)
-    return render(request, "safglobalcrm/index.html", {"url_patterns": url_patterns})
+    collect_urls(resolver.url_patterns)
+    # return urls
+    # url_patterns = []
+    # resolver = get_resolver()
+    # for url_pattern in resolver.url_patterns:
+    #     print(url_pattern.pattern)
+    #     url_patterns.append(url_pattern.pattern)
+    return render(request, "safglobalcrm/index.html", {"url_patterns": urls})
 
 # Create your views here.
 class CountriesList(generics.ListAPIView):

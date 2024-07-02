@@ -8,13 +8,33 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from django.db.models import Q
 
 # Create your views here.
 class HubsList(generics.ListAPIView):
-    queryset = Hubs.objects.all()
     serializer_class = HubsReadSerializer
     permission_classes = [IsAuthenticated]
-    
+
+    def get_queryset(self):
+        queryset = Hubs.objects.all()
+
+        # Retrieve query parameters for filtering, for instance, 'name'
+        search = self.request.query_params.get('search', None)
+        sortby = self.request.query_params.get('sortby', 'id')
+        sortdirection = self.request.query_params.get('sortdirection', 'desc')
+
+        if sortdirection == 'desc':
+            sortby = '-' + sortby
+        
+        if search is not None:
+            # Apply filtering based on the 'name' parameter
+            queryset = queryset.filter(Q(name__icontains=search) | Q(company_id__icontains=search) | Q(customer_number__icontains=search))
+        queryset = queryset.order_by(sortby)        
+        return queryset
+class HubsDetails(generics.RetrieveAPIView):
+    serializer_class = HubsReadSerializer
+    queryset = Hubs.objects.all()
+    permission_classes = [IsAuthenticated]
 class HubsCreate(generics.CreateAPIView):
     serializer_class = HubsSerializer
     permission_classes = [IsAuthenticated]
@@ -49,10 +69,15 @@ class HubsUsersList(generics.ListAPIView):
     def get_queryset(self):
         queryset = HubUsers.objects.all()
         # Retrieve query parameters for filtering, for instance, 'name'
-        hub_filter = self.request.query_params.get('hub', None)
-        if hub_filter is not None:
+        search = self.request.query_params.get('search', None)
+        sortby = self.request.query_params.get('sortby', 'id')
+        sortdirection = self.request.query_params.get('sortdirection', 'desc')
+        if sortdirection == 'desc':
+            sortby = '-' + sortby
+        if search is not None:
             # Apply filtering based on the 'name' parameter
-            queryset = queryset.filter(hub=hub_filter)
+            queryset = queryset.filter(Q(name__icontains=search) | Q(email__icontains=search) | Q(email__icontains=search))
+        queryset = queryset.order_by(sortby)      
         return queryset
 class HubsUsersUpdate(generics.UpdateAPIView):
     queryset = HubUsers.objects.all()

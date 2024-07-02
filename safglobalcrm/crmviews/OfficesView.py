@@ -8,16 +8,37 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-
+from django.db.models import Q
 
 # Office Views.
 class OfficesCreate(generics.CreateAPIView):
     serializer_class = OfficeSerializer
     permission_classes = [IsAuthenticated]
+    
 class OfficesList(generics.ListAPIView):
-    queryset = Offices.objects.all()
     serializer_class = OfficeReadSerializer
     permission_classes = [IsAuthenticated]
+    def get_queryset(self):
+        queryset = Offices.objects.all()
+        # Retrieve query parameters for filtering, for instance, 'name'
+        search = self.request.query_params.get('search', None)
+        sortby = self.request.query_params.get('sortby', 'id')
+        sortdirection = self.request.query_params.get('sortdirection', 'desc')
+
+        if sortdirection == 'desc':
+            sortby = '-' + sortby
+        
+        if search is not None:
+            # Apply filtering based on the 'name' parameter
+            queryset = queryset.filter(Q(name__icontains=search) | Q(short_name__icontains=search) | Q(company_id__icontains=search) | Q(customer_number__icontains=search))
+        queryset = queryset.order_by(sortby) 
+        return queryset
+    
+class OfficesDetails(generics.RetrieveAPIView):
+    serializer_class = OfficeReadSerializer
+    queryset = Offices.objects.all()
+    permission_classes = [IsAuthenticated]
+
 class OfficesUpdate(generics.UpdateAPIView):
     queryset = Offices.objects.all()
     serializer_class = OfficeSerializer

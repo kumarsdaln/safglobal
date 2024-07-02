@@ -50,6 +50,13 @@ class HubEmailsSerializeer(serializers.ModelSerializer):
 class HubAdditionalOfficeAddressSerializeer(serializers.ModelSerializer):
     class Meta:
         model = HubAdditionalOfficeAddress
+        fields = "__all__" 
+class HubReadAdditionalOfficeAddressSerializeer(serializers.ModelSerializer):
+    country = CountriesSerializer(read_only=True)
+    state = StatesSerializer(read_only=True)
+    city = CitiesSerializer(read_only=True)
+    class Meta:
+        model = HubAdditionalOfficeAddress
         fields = "__all__"        
 class HubsSerializer(serializers.ModelSerializer):
     emails = HubEmailsSerializeer(many=True, required=False)
@@ -65,6 +72,7 @@ class HubsSerializer(serializers.ModelSerializer):
                 
         if request.data.get('additionalAddresses'):
             additionalAddresses = request.data.get('additionalAddresses')
+            print(additionalAddresses)
             data['additionalAddresses'] = json.loads(additionalAddresses)
         
         
@@ -142,7 +150,7 @@ class HubsReadSerializer(serializers.ModelSerializer):
     state = StatesSerializer(read_only=True)
     city = CitiesSerializer(read_only=True)
     emails = HubEmailsSerializeer(many=True, required=False)
-    additionalAddresses = HubAdditionalOfficeAddressSerializeer(many=True, required=False)
+    additionalAddresses = HubReadAdditionalOfficeAddressSerializeer(many=True, required=False)
     class Meta:
         model = Hubs
         fields = '__all__' 
@@ -165,6 +173,13 @@ class AgentAdditionalOfficeAddressSerializeer(serializers.ModelSerializer):
     class Meta:
         model = AgentAdditionalOfficeAddress
         fields = "__all__"        
+class AgentReadAdditionalOfficeAddressSerializeer(serializers.ModelSerializer):
+    country = CountriesSerializer(read_only=True)
+    state = StatesSerializer(read_only=True)
+    city = CitiesSerializer(read_only=True)
+    class Meta:
+        model = AgentAdditionalOfficeAddress
+        fields = "__all__"          
 class AgentsSerializer(serializers.ModelSerializer):
     emails = AgentEmailsSerializeer(many=True, required=False)
     additionalAddresses = AgentAdditionalOfficeAddressSerializeer(many=True, required=False)
@@ -257,7 +272,8 @@ class AgentsReadSerializer(serializers.ModelSerializer):
     state = StatesSerializer(read_only=True)
     city = CitiesSerializer(read_only=True)
     emails = AgentEmailsSerializeer(many=True, required=False)
-    additionalAddresses = AgentAdditionalOfficeAddressSerializeer(many=True, required=False)
+    additionalAddresses = AgentReadAdditionalOfficeAddressSerializeer(many=True, required=False)
+    currency = CurrenciesSerializer(read_only = True)
     class Meta:
         model = Agents
         fields = '__all__' 
@@ -469,6 +485,9 @@ class CustomersReadSerializer(serializers.ModelSerializer):
     country = CountriesSerializer(read_only=True)
     state = StatesSerializer(read_only=True)
     city = CitiesSerializer(read_only=True)
+    responsible_office = OfficeReadSerializer(read_only=True)
+    main_account_manager = OfficeUsersSerializer(read_only=True)
+    all_account_manager = OfficeUsersSerializer(read_only=True)
     emails = CustomerEmailsSerializeer(many=True, required=False)
     additionalAddresses = CustomerAdditionalOfficeAddressSerializeer(many=True, required=False)
     class Meta:

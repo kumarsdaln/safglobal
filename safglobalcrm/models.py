@@ -75,12 +75,14 @@ class Hubs(models.Model):
     code_description = models.CharField(max_length=250)
     phone_number = models.CharField(max_length=20)
     remarks = models.TextField()
-    is_gts = models.BooleanField()
+    is_gst = models.BooleanField()
     address = models.TextField()
     country = models.ForeignKey(Countries, on_delete=models.CASCADE)
     state = models.ForeignKey(States, on_delete=models.CASCADE)
     city = models.ForeignKey(Cities, on_delete=models.CASCADE)
     zip_code = models.CharField(max_length=10)
+    eori_number = models.CharField(max_length=20, null=True)
+    un_lo_code = models.CharField(max_length=20, null=True)
 
     def __str__(self) -> str:
         return f"{self.name}"
@@ -220,8 +222,8 @@ class Customers(models.Model):
     city = models.ForeignKey(Cities, on_delete=models.CASCADE)
     zip_code = models.CharField(max_length=10)
     port_code = models.CharField(max_length=10)
-    main_account_manager = models.CharField(max_length=100)
-    all_account_manager = models.CharField(max_length=100)
+    main_account_manager = models.ForeignKey(OfficeUsers, on_delete=models.CASCADE, related_name='main_account_manager')
+    all_account_manager = models.ForeignKey(OfficeUsers, on_delete=models.CASCADE, related_name='all_account_manager')
     responsible_office = models.ForeignKey(Offices, on_delete=models.CASCADE)
     customer_logo = models.ImageField(upload_to='uploads/logo/customers')
     display_logo_address_on_menifest = models.BooleanField()

@@ -8,6 +8,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from django.db.models import Q
 
 
 # Create your views here.
@@ -15,6 +16,22 @@ class ShipmentList(generics.ListAPIView):
     queryset = Shipment.objects.all()
     serializer_class = ShipmentReadSerializer
     permission_classes = [IsAuthenticated]
+    def get_queryset(self):
+        queryset = Shipment.objects.all()
+
+        # Retrieve query parameters for filtering, for instance, 'name'
+        search = self.request.query_params.get('search', None)
+        sortby = self.request.query_params.get('sortby', 'id')
+        sortdirection = self.request.query_params.get('sortdirection', 'asc')
+
+        if sortdirection == 'desc':
+            sortby = '-' + sortby
+        
+        if search is not None:
+            # Apply filtering based on the 'name' parameter
+            queryset = queryset.filter(Q(name__icontains=search) | Q(company_id__icontains=search) | Q(customer_number__icontains=search))
+        queryset = queryset.order_by(sortby)    
+        return queryset
     
 class ShipmentCreate(generics.CreateAPIView):
     serializer_class = ShipmentSerializer
