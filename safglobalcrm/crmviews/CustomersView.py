@@ -35,6 +35,11 @@ class CustomersCreate(generics.CreateAPIView):
     serializer_class = CustomersSerializer
     permission_classes = [IsAuthenticated]
 
+class CustomersDetails(generics.RetrieveAPIView):
+    serializer_class = CustomersReadSerializer
+    queryset = Customers.objects.all()
+    permission_classes = [IsAuthenticated]    
+
 class CustomersUpdate(generics.UpdateAPIView):
     queryset = Customers.objects.all()
     serializer_class = CustomersSerializer

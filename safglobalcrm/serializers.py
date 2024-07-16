@@ -286,7 +286,14 @@ class SupplierEmailsSerializeer(serializers.ModelSerializer):
 class SupplierAdditionalOfficeAddressSerializeer(serializers.ModelSerializer):
     class Meta:
         model = SupplierAdditionalOfficeAddress
-        fields = "__all__"        
+        fields = "__all__"   
+class SupplierReadAdditionalOfficeAddressSerializeer(serializers.ModelSerializer):
+    country = CountriesSerializer(read_only=True)
+    state = StatesSerializer(read_only=True)
+    city = CitiesSerializer(read_only=True)
+    class Meta:
+        model = SupplierAdditionalOfficeAddress
+        fields = "__all__"                   
 class SuppliersSerializer(serializers.ModelSerializer):
     emails = SupplierEmailsSerializeer(many=True, required=False)
     additionalAddresses = SupplierAdditionalOfficeAddressSerializeer(many=True, required=False)
@@ -380,7 +387,7 @@ class SuppliersReadSerializer(serializers.ModelSerializer):
     city = CitiesSerializer(read_only=True)
     currency = CurrenciesSerializer(read_only=True)
     emails = SupplierEmailsSerializeer(many=True, required=False)
-    additionalAddresses = SupplierAdditionalOfficeAddressSerializeer(many=True, required=False)
+    additionalAddresses = SupplierReadAdditionalOfficeAddressSerializeer(many=True, required=False)
     class Meta:
         model = Suppliers
         fields = '__all__' 
@@ -394,6 +401,14 @@ class CustomerAdditionalOfficeAddressSerializeer(serializers.ModelSerializer):
     class Meta:
         model = CustomerPostalAddress
         fields = "__all__"        
+
+class CustomerReadAdditionalOfficeAddressSerializeer(serializers.ModelSerializer):
+    country = CountriesSerializer(read_only=True)
+    state = StatesSerializer(read_only=True)
+    city = CitiesSerializer(read_only=True)
+    class Meta:
+        model = CustomerPostalAddress
+        fields = "__all__"  
 class CustomersSerializer(serializers.ModelSerializer):
     emails = CustomerEmailsSerializeer(many=True, required=False)
     additionalAddresses = CustomerAdditionalOfficeAddressSerializeer(many=True, required=False)
@@ -489,7 +504,7 @@ class CustomersReadSerializer(serializers.ModelSerializer):
     main_account_manager = OfficeUsersSerializer(read_only=True)
     all_account_manager = OfficeUsersSerializer(read_only=True)
     emails = CustomerEmailsSerializeer(many=True, required=False)
-    additionalAddresses = CustomerAdditionalOfficeAddressSerializeer(many=True, required=False)
+    additionalAddresses = CustomerReadAdditionalOfficeAddressSerializeer(many=True, required=False)
     class Meta:
         model = Customers
         fields = '__all__' 
@@ -511,7 +526,14 @@ class OtherCompanyEmailsSerializeer(serializers.ModelSerializer):
 class OtherCompaniesAdditionalOfficeAddressSerializeer(serializers.ModelSerializer):
     class Meta:
         model = OtherCompaniesAdditionalOfficeAddress
-        fields = "__all__"        
+        fields = "__all__"     
+class OtherCompaniesReadAdditionalOfficeAddressSerializeer(serializers.ModelSerializer):
+    country = CountriesSerializer(read_only=True)
+    state = StatesSerializer(read_only=True)
+    city = CitiesSerializer(read_only=True)
+    class Meta:
+        model = OtherCompaniesAdditionalOfficeAddress
+        fields = "__all__"    
 class OtherCompaniesSerializer(serializers.ModelSerializer):
     emails = OtherCompanyEmailsSerializeer(many=True, required=False)
     additionalAddresses = OtherCompaniesAdditionalOfficeAddressSerializeer(many=True, required=False)
@@ -605,7 +627,7 @@ class OtherCompaniesReadSerializer(serializers.ModelSerializer):
     city = CitiesSerializer(read_only=True)
     currency = CurrenciesSerializer(read_only=True)
     emails = OtherCompanyEmailsSerializeer(many=True, required=False)
-    additionalAddresses = OtherCompaniesAdditionalOfficeAddressSerializeer(many=True, required=False)
+    additionalAddresses = OtherCompaniesReadAdditionalOfficeAddressSerializeer(many=True, required=False)
     class Meta:
         model = OtherCompanies
         fields = '__all__' 

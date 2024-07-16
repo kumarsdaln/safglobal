@@ -33,7 +33,8 @@ class AgentsList(generics.ListAPIView):
 class AgentsDetails(generics.RetrieveAPIView):
     serializer_class = AgentsReadSerializer
     queryset = Agents.objects.all()
-    permission_classes = [IsAuthenticated]    
+    permission_classes = [IsAuthenticated]  
+
 class AgentsCreate(generics.CreateAPIView):
     serializer_class = AgentsSerializer
     permission_classes = [IsAuthenticated]

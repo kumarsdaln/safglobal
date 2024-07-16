@@ -35,6 +35,11 @@ class OtherCompaniesCreate(generics.CreateAPIView):
     serializer_class = OtherCompaniesSerializer
     permission_classes = [IsAuthenticated]
 
+class OtherCompaniesDetails(generics.RetrieveAPIView):
+    serializer_class = OtherCompaniesReadSerializer
+    permission_classes = [IsAuthenticated]    
+    queryset = OtherCompanies.objects.all()
+
 class OtherCompaniesUpdate(generics.UpdateAPIView):
     queryset = OtherCompanies.objects.all()
     serializer_class = OtherCompaniesSerializer

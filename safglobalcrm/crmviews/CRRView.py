@@ -36,6 +36,11 @@ class CRRCreate(generics.CreateAPIView):
     serializer_class = CRRSerializer
     permission_classes = [IsAuthenticated]
 
+class CRRDetails(generics.RetrieveAPIView):
+    serializer_class = CRRReadSerializer
+    permission_classes = [IsAuthenticated]
+    queryset = CRR.objects.all()
+
 class CRRUpdate(generics.UpdateAPIView):
     queryset = CRR.objects.all()
     serializer_class = CRRSerializer

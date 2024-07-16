@@ -68,12 +68,14 @@ urlpatterns = [
     path('suppliers/', include([
         path('', SuppliersList.as_view(), name='crm.suppliers.list'),
         path('create/', SuppliersCreate.as_view(), name='crm.suppliers.create'),
+        path('<int:pk>/', SuppliersDetails.as_view(), name='crm.suppliers.deatils'),
         path('<int:pk>/edit/', SuppliersUpdate.as_view(), name='crm.suppliers.edit'),
         path('<int:pk>/delete/', SuppliersDelete.as_view(), name='crm.suppliers.delete'),
     ])),
     path('customers/', include([
         path('', CustomersList.as_view(), name='crm.customers.list'),
         path('create/', CustomersCreate.as_view(), name='crm.customers.create'),
+        path('<int:pk>/', CustomersDetails.as_view(), name='crm.customers.details'),
         path('<int:pk>/edit/', CustomersUpdate.as_view(), name='crm.customers.edit'),
         path('<int:pk>/delete/', CustomersDelete.as_view(), name='crm.customers.delete'),
         path('users/', include([
@@ -93,12 +95,14 @@ urlpatterns = [
     path('other-companies/', include([
         path('', OtherCompaniesList.as_view(), name='crm.othercompanies.list'),
         path('create/', OtherCompaniesCreate.as_view(), name='crm.othercompanies.create'),
+        path('<int:pk>/', OtherCompaniesDetails.as_view(), name='crm.othercompanies.details'),
         path('<int:pk>/edit/', OtherCompaniesUpdate.as_view(), name='crm.othercompanies.edit'),
         path('<int:pk>/delete/', OtherCompaniesDelete.as_view(), name='crm.othercompanies.delete'),
     ])),
     path('shipment/', include([
         path('', ShipmentList.as_view(), name='crm.shipment.list'),
         path('create/', ShipmentCreate.as_view(), name='crm.shipment.create'),
+        path('<int:pk>/', ShipmentDetails.as_view(), name='crm.shipment.details'),
         path('<int:pk>/edit/', ShipmentUpdate.as_view(), name='crm.shipment.edit'),
         path('<int:pk>/delete/', ShipmentDelete.as_view(), name='crm.shipment.delete'),
         path('service-details/', include([
@@ -111,6 +115,7 @@ urlpatterns = [
     path('crr/', include([
         path('', CRRList.as_view(), name='crm.crr.list'),
         path('create/', CRRCreate.as_view(), name='crm.crr.create'),
+        path('<int:pk>/', CRRDetails.as_view(), name='crm.crr.details'),
         path('<int:pk>/edit/', CRRUpdate.as_view(), name='crm.crr.edit'),
         path('<int:pk>/delete/', CRRDelete.as_view(), name='crm.crr.delete'),
         path('stock-items/', include([

@@ -33,10 +33,12 @@ def index(request):
 
 # Create your views here.
 class CountriesList(generics.ListAPIView):
+    pagination_class = None
     queryset = Countries.objects.all()
     serializer_class = CountriesSerializer
     permission_classes = [IsAuthenticated]
 class StatesList(generics.ListAPIView):
+    pagination_class = None
     serializer_class = StatesSerializer
     permission_classes = [IsAuthenticated]
     def get_queryset(self):
@@ -48,6 +50,7 @@ class StatesList(generics.ListAPIView):
             queryset = queryset.filter(country=country_filter)
         return queryset
 class CitiesList(generics.ListAPIView):
+    pagination_class = None
     serializer_class = CitiesSerializer
     permission_classes = [IsAuthenticated]
     def get_queryset(self):
@@ -59,6 +62,7 @@ class CitiesList(generics.ListAPIView):
             queryset = queryset.filter(state=state_filter)
         return queryset
 class CurrenciesList(generics.ListAPIView):
+    pagination_class = None
     queryset = Currencies.objects.all()
     serializer_class = CurrenciesSerializer
     permission_classes = [IsAuthenticated]

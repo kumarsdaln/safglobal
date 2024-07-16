@@ -37,6 +37,10 @@ class ShipmentCreate(generics.CreateAPIView):
     serializer_class = ShipmentSerializer
     permission_classes = [IsAuthenticated]
 
+class ShipmentDetails(generics.RetrieveAPIView):
+    serializer_class = ShipmentReadSerializer
+    permission_classes = [IsAuthenticated]
+    queryset = Shipment.objects.all()
 
 class ShipmentUpdate(generics.UpdateAPIView):
     queryset = Shipment.objects.all()

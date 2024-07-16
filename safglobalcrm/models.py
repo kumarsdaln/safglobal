@@ -11,15 +11,16 @@ def create_auth_token(sender, instance=None, created=False, **kwargs):
         Token.objects.create(user=instance)
 class Countries(models.Model):
     name = models.CharField(max_length=100)
-    icon = models.ImageField(upload_to='uploads/icons/countries')
+    icon = models.ImageField(upload_to='uploads/icons/countries', null=True)
     slug = models.SlugField()
+    phonecode = models.CharField(max_length=10, null=True)
 
     def __str__(self) -> str:
         return f"{self.name}"
 
 class States(models.Model):
     name = models.CharField(max_length=100)
-    slug = models.SlugField()
+    slug = models.SlugField(null=True)
     country = models.ForeignKey(Countries, on_delete=models.CASCADE)
 
     def __str__(self) -> str:
@@ -27,7 +28,7 @@ class States(models.Model):
 
 class Cities(models.Model):
     name = models.CharField(max_length=100)
-    slug = models.SlugField()
+    slug = models.SlugField(null=True)
     state = models.ForeignKey(States, on_delete=models.CASCADE)
 
     def __str__(self) -> str:
@@ -329,24 +330,24 @@ class ShipmentConsignee(models.Model):
     consignee_from_agent = models.ForeignKey(Agents, on_delete=models.CASCADE, null=True, blank=True)
 
 class Shipment(models.Model):
-    SHIPMENT_STATUS_CHOICES = {
-    "P": "In Progress",
-    "T": "In Transit",
-    "D": "Delivered",
-    }
-    SHIPMENT_CHOICES = {
-    "H": "Hub",
-    "O": "Office",
-    "A": "Agent",
-    }
-    SERVICE_CHOICES = {
-        "A":"Air",
-        "S":"Sea",
-        "T":"Truck",
-        "C":"Coriers",
-        "R":"Release",
-        "O":"On Board"
-    }
+    SHIPMENT_STATUS_CHOICES = [
+        ("P", "In Progress"),
+        ("T", "In Transit"),
+        ("D", "Delivered")
+    ]
+    SHIPMENT_CHOICES = [
+        ("H", "Hub"),
+        ("O", "Office"),
+        ("A", "Agent")
+    ]
+    SERVICE_CHOICES = [
+        ("A","Air"),
+        ("S","Sea"),
+        ("T","Truck"),
+        ("C","Coriers"),
+        ("R","Release"),
+        ("O","On Board")
+    ]
     departure_in = models.CharField(max_length=2, choices=SHIPMENT_CHOICES)
     departure = models.ForeignKey(ShipmentDeparture, on_delete=models.CASCADE)
     port_code = models.CharField(max_length=100)
@@ -412,11 +413,11 @@ class ShipmentServiceDetails(models.Model):
     on_board = models.ForeignKey(OnBoard, on_delete=models.SET_NULL, null=True)
     
 class CRR(models.Model):
-    STATUS_CHOICES = {
-    "P": "Pending",
-    "D": "Delivered",
-    "O": "On Call",
-    }
+    STATUS_CHOICES = [
+        ("P", "Pending"),
+        ("D", "Delivered"),
+        ("O", "On Call")
+    ]
     vessel = models.ForeignKey(CustomerVessels, on_delete=models.CASCADE)
     po_number = models.CharField(max_length=20)
     po_remarks = models.TextField()
