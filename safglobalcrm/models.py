@@ -3,6 +3,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
 from django.conf import settings
+from django.contrib.auth.models import User
 
 # Create your models here.
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
@@ -45,7 +46,7 @@ class Offices(models.Model):
     name = models.CharField(max_length=150)
     company_id = models.CharField(max_length=20)
     short_name = models.CharField(max_length=10)
-    customer_number = models.CharField(max_length=20)
+    customer_number = models.CharField(max_length=20, null=True)
     phone_number = models.CharField(max_length=20)
     email = models.EmailField()
     eori_number = models.CharField(max_length=20) 
@@ -71,7 +72,7 @@ class OfficeUsers(models.Model):
 class Hubs(models.Model):
     name = models.CharField(max_length=100)
     company_id = models.CharField(max_length=20)
-    customer_number = models.CharField(max_length=20)
+    customer_number = models.CharField(max_length=20, null=True)
     code = models.CharField(max_length=10)
     code_description = models.CharField(max_length=250)
     phone_number = models.CharField(max_length=20)
@@ -151,7 +152,7 @@ class Agents(models.Model):
     vat_number = models.CharField(max_length=20)
     eori_number = models.CharField(max_length=20)
     currency = models.ForeignKey(Currencies, on_delete=models.CASCADE)
-    un_lo_code = models.CharField(max_length=20)
+    un_lo_code = models.CharField(max_length=20, null=True)
 
     def __str__(self) -> str:
         return f"{self.name}"
@@ -189,7 +190,7 @@ class Suppliers(models.Model):
     vat_number = models.CharField(max_length=20)
     eori_number = models.CharField(max_length=20)
     currency = models.ForeignKey(Currencies, on_delete=models.CASCADE)
-    un_lo_code = models.CharField(max_length=20)
+    un_lo_code = models.CharField(max_length=20, null=True)
 
     def __str__(self) -> str:
         return f"{self.name}"
@@ -249,26 +250,7 @@ class CustomerPostalAddress(models.Model):
 
     def __str__(self) -> str:
         return f"{self.customer.name} - Postal Address"
-
-class CustomerVessels(models.Model):
-    name = models.CharField(max_length=100)
-    vessel_code = models.CharField(max_length=20)
-    imo = models.CharField(max_length=100)
-    inactive_vessel = models.BooleanField()
-    in_transit = models.BooleanField()
-    vessal_type = models.CharField(max_length=100)
-    fleet_category = models.CharField(max_length=100)
-    registered_in_country = models.ForeignKey(Countries, on_delete=models.CASCADE)
-    internal_shipment = models.CharField(max_length=100)
-    expect_from_hubs =  models.CharField(max_length=100)
-    remarks = models.TextField()
-    manager_from_customer = models.CharField(max_length=100)
-    account_manager = models.CharField(max_length=100)
-    customer = models.ForeignKey(Customers, on_delete=models.CASCADE, null=True)
-
-    def __str__(self) -> str:
-        return f"{self.customer.name} - Vessels"
-
+    
 class CustomerUsers(models.Model):
     name = models.CharField(max_length=100)
     phone = models.CharField(max_length=15)
@@ -277,7 +259,30 @@ class CustomerUsers(models.Model):
     customer = models.ForeignKey(Customers, on_delete=models.CASCADE)
 
     def __str__(self) -> str:
-        return f"{self.customer.name} - Users"
+        return f"{self.name}"
+    
+class CustomerVessels(models.Model):
+    FLEET_CATEGORY_CHOICES = [
+        ("1", "MV"),
+        ("2", "MT")
+    ]
+    name = models.CharField(max_length=100)
+    vessel_code = models.CharField(max_length=20)
+    imo = models.CharField(max_length=100)
+    inactive_vessel = models.BooleanField()
+    in_transit = models.BooleanField()
+    vessal_type = models.CharField(max_length=100)
+    fleet_category = models.CharField(max_length=1, choices=FLEET_CATEGORY_CHOICES)
+    registered_in_country = models.ForeignKey(Countries, on_delete=models.CASCADE)
+    internal_shipment = models.CharField(max_length=100)
+    expect_from_hubs =  models.CharField(max_length=100)
+    remarks = models.TextField()
+    manager_from_customer = models.ForeignKey(CustomerUsers, on_delete=models.CASCADE, null=True)
+    account_manager = models.ManyToManyField(CustomerUsers, related_name='customer_vessels_list')
+    customer = models.ForeignKey(Customers, on_delete=models.CASCADE, null=True)
+
+    def __str__(self) -> str:
+        return f"{self.customer.name} - Vessels"
 
 class OtherCompanies(models.Model):
     name = models.CharField(max_length=100)
@@ -296,7 +301,7 @@ class OtherCompanies(models.Model):
     vat_number = models.CharField(max_length=20)
     eori_number = models.CharField(max_length=20)
     currency = models.ForeignKey(Currencies, on_delete=models.CASCADE)
-    un_lo_code = models.CharField(max_length=20)
+    un_lo_code = models.CharField(max_length=20, null=True)
 
     def __str__(self) -> str:
         return f"{self.name}"
@@ -318,7 +323,61 @@ class OtherCompaniesAdditionalOfficeAddress(models.Model):
 
     def __str__(self) -> str:
         return f"{self.other_company.name} - Addtional Address"  
-    
+
+#CRR    
+class CRR(models.Model):
+    STATUS_CHOICES = [
+        ("P", "Pending"),
+        ("D", "Delivered"),
+        ("O", "On Call")
+    ]
+    vessel = models.ForeignKey(CustomerVessels, on_delete=models.CASCADE)
+    po_number = models.TextField()
+    po_remarks = models.TextField()
+    content = models.TextField()
+    content_description = models.TextField()
+    supplier = models.ForeignKey(Suppliers, on_delete=models.CASCADE)
+    expected_delivery_date = models.DateField()
+    actual_delivery_date = models.DateField(null=True)
+    supplier_reference = models.TextField()
+    deadline_warehouse = models.DateField()
+    internal_shipment = models.TextField()
+    delivery_irregulations = models.TextField()
+    hub = models.ForeignKey(Hubs, on_delete=models.SET_NULL, null=True)
+    agent = models.ForeignKey(Agents, on_delete=models.SET_NULL, null=True)
+    transit_id = models.CharField(max_length=20)
+    t1_reference = models.CharField(max_length=150)
+    ex_a = models.CharField(max_length=150)
+    country = models.ForeignKey(Countries, on_delete=models.RESTRICT)
+    hs_code = models.CharField(max_length=150)
+    currency = models.ForeignKey(Currencies, on_delete=models.RESTRICT)
+    customs_value = models.TextField()
+    priorty = models.TextField()
+    customs_value_usd = models.TextField()
+    status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='P')
+    accept = models.BooleanField(default=False)
+    register_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    register_on = models.DateField(auto_now_add=True)
+
+class CRRStockItem(models.Model):
+    length = models.FloatField()
+    width = models.FloatField()
+    height = models.FloatField()
+    weight = models.FloatField()
+    cbm = models.CharField(max_length=100)
+    warhouse_location = models.TextField()
+    dgr = models.BooleanField(default=False)
+    not_stack = models.BooleanField(default=False)
+    medicine = models.BooleanField(default=False)
+    x_ray = models.BooleanField(default=False)
+    crr = models.ForeignKey(CRR, on_delete=models.CASCADE)
+
+class CRRDocuments(models.Model):
+    document = models.FileField(upload_to='uploads/crr/documents')
+    document_type = models.CharField(max_length=255,null=True) 
+    crr = models.ForeignKey(CRR, on_delete=models.CASCADE)       
+
+#Shipment    
 class ShipmentDeparture(models.Model):
     departure_from_hub = models.ForeignKey(Hubs, on_delete=models.CASCADE, null=True, blank=True)
     departure_from_office = models.ForeignKey(Offices, on_delete=models.CASCADE, null=True, blank=True)
@@ -376,6 +435,7 @@ class Shipment(models.Model):
     project_logistic_shipment = models.BooleanField()
     shipment_status = models.CharField(max_length=10, choices=SHIPMENT_STATUS_CHOICES)
     mark_as_arrived = models.BooleanField(default=0)
+    stock_items = models.ManyToManyField(CRR)
 
 class Air(models.Model):
     airway_bill = models.CharField(max_length=100)
@@ -411,54 +471,4 @@ class ShipmentServiceDetails(models.Model):
     coriers = models.ForeignKey(Coriers, on_delete=models.SET_NULL, null=True)
     release = models.ForeignKey(Release, on_delete=models.SET_NULL, null=True)
     on_board = models.ForeignKey(OnBoard, on_delete=models.SET_NULL, null=True)
-    
-class CRR(models.Model):
-    STATUS_CHOICES = [
-        ("P", "Pending"),
-        ("D", "Delivered"),
-        ("O", "On Call")
-    ]
-    vessel = models.ForeignKey(CustomerVessels, on_delete=models.CASCADE)
-    po_number = models.CharField(max_length=20)
-    po_remarks = models.TextField()
-    content = models.TextField()
-    content_description = models.TextField()
-    supplier = models.ForeignKey(Suppliers, on_delete=models.CASCADE)
-    expected_delivery_date = models.DateField()
-    actual_delivery_date = models.DateField(null=True)
-    supplier_reference = models.TextField()
-    deadline_warehouse = models.DateField()
-    internal_shipment = models.TextField()
-    delivery_irregulations = models.TextField()
-    hub = models.ForeignKey(Hubs, on_delete=models.SET_NULL, null=True)
-    agent = models.ForeignKey(Agents, on_delete=models.SET_NULL, null=True)
-    transit_id = models.CharField(max_length=20)
-    t1_reference = models.CharField(max_length=150)
-    ex_a = models.CharField(max_length=150)
-    country = models.ForeignKey(Countries, on_delete=models.RESTRICT)
-    hs_code = models.CharField(max_length=150)
-    currency = models.ForeignKey(Currencies, on_delete=models.RESTRICT)
-    customs_value = models.TextField()
-    priorty = models.TextField()
-    customs_value_usd = models.TextField()
-    status = models.CharField(max_length=1, choices=STATUS_CHOICES, default='P')
-    accept = models.BooleanField(default=False)
-
-class CRRStockItem(models.Model):
-    length = models.FloatField()
-    width = models.FloatField()
-    height = models.FloatField()
-    weight = models.FloatField()
-    cbm = models.CharField(max_length=100)
-    warhouse_location = models.TextField()
-    dgr = models.BooleanField(default=False)
-    not_stack = models.BooleanField(default=False)
-    medicine = models.BooleanField(default=False)
-    x_ray = models.BooleanField(default=False)
-    crr = models.ForeignKey(CRR, on_delete=models.CASCADE)
-
-class CRRDocuments(models.Model):
-    document = models.FileField(upload_to='uploads/crr/documents') 
-    crr = models.ForeignKey(CRR, on_delete=models.CASCADE)
-       
 

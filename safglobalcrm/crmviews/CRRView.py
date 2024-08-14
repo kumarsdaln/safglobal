@@ -19,6 +19,7 @@ class CRRList(generics.ListAPIView):
         queryset = CRR.objects.all()
 
         # Retrieve query parameters for filtering, for instance, 'name'
+        accept = self.request.query_params.get('accept', 0)
         search = self.request.query_params.get('search', None)
         sortby = self.request.query_params.get('sortby', 'id')
         sortdirection = self.request.query_params.get('sortdirection', 'asc')
@@ -29,12 +30,17 @@ class CRRList(generics.ListAPIView):
         if search is not None:
             # Apply filtering based on the 'name' parameter
             queryset = queryset.filter(Q(name__icontains=search) | Q(company_id__icontains=search) | Q(customer_number__icontains=search))
+        queryset = queryset.filter(accept=accept)    
         queryset = queryset.order_by(sortby)    
         return queryset
     
 class CRRCreate(generics.CreateAPIView):
     serializer_class = CRRSerializer
     permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        register_by = self.request.user
+        serializer.save(register_by=register_by)
 
 class CRRDetails(generics.RetrieveAPIView):
     serializer_class = CRRReadSerializer
@@ -64,10 +70,17 @@ class CRRDelete(generics.DestroyAPIView):
     
 #Shipment Service Details
 class CRRStockItemList(generics.ListAPIView):
-    queryset = CRRStockItem.objects.all()
+    pagination_class = None
     serializer_class = CRRStockItemSerializer
     permission_classes = [IsAuthenticated]
-
+    def get_queryset(self):
+        queryset = CRRStockItem.objects.all()
+        # Retrieve query parameters for filtering, for instance, 'name'
+        crr_filter = self.request.query_params.get('crr', None)
+        if crr_filter is not None:
+            # Apply filtering based on the 'name' parameter
+            queryset = queryset.filter(crr=crr_filter)
+        return queryset
 class CRRStockItemCreate(generics.CreateAPIView):
     serializer_class = CRRStockItemSerializer
     permission_classes = [IsAuthenticated] 
@@ -96,9 +109,17 @@ class CRRStockItemDelete(generics.DestroyAPIView):
 
 #Shipment Service Details
 class CRRDocumentsList(generics.ListAPIView):
-    queryset = CRRDocuments.objects.all()
+    pagination_class = None
     serializer_class = CRRDocumentsSerializer
     permission_classes = [IsAuthenticated]
+    def get_queryset(self):
+        queryset = CRRDocuments.objects.all()
+        # Retrieve query parameters for filtering, for instance, 'name'
+        crr_filter = self.request.query_params.get('crr', None)
+        if crr_filter is not None:
+            # Apply filtering based on the 'name' parameter
+            queryset = queryset.filter(crr=crr_filter)
+        return queryset
 
 class CRRDocumentsCreate(generics.CreateAPIView):
     serializer_class = CRRDocumentsSerializer

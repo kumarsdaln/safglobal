@@ -4,6 +4,17 @@ from django.urls import reverse
 import json
 from django.db import transaction
 from django.shortcuts import get_object_or_404
+from django.contrib.auth.models import User
+
+class UserSerializer(serializers.ModelSerializer):
+    full_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'first_name', 'last_name', 'email', 'full_name']
+
+    def get_full_name(self, obj):
+        return f"{obj.first_name} {obj.last_name}"
 
 class CountriesSerializer(serializers.ModelSerializer):
     class Meta:
@@ -513,10 +524,21 @@ class CustomerUsersSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomerUsers
         fields = '__all__'            
-class CustomerVesselsSerializer(serializers.ModelSerializer):
+        
+class CustomerVesselsReadSerializer(serializers.ModelSerializer):
+    account_manager = CustomerUsersSerializer(many=True, required=False)
+    registered_in_country = CountriesSerializer(read_only=True)
+    manager_from_customer = CustomerUsersSerializer(read_only=True)
+    
     class Meta:
         model = CustomerVessels
-        fields = '__all__'   
+        fields = '__all__'
+class CustomerVesselsSerializer(serializers.ModelSerializer):
+    account_manager = CustomerUsersSerializer(many=True, required=False)
+
+    class Meta:
+        model = CustomerVessels
+        fields = '__all__'
 
 #Other Companies 
 class OtherCompanyEmailsSerializeer(serializers.ModelSerializer):
@@ -761,6 +783,8 @@ class ShipmentReadSerializer(serializers.ModelSerializer):
     consignee_city = CitiesSerializer(read_only=True)
     departure = ShipmentDepartureSerializer(required=False)
     consignee = ShipmentConsigneeSerializer(required=False)
+    display_shipment_status = serializers.CharField(source='get_shipment_status_display', read_only=True)
+    display_service = serializers.CharField(source='get_service_display', read_only=True)
     class Meta:
         model = Shipment
         fields = '__all__'
@@ -912,10 +936,12 @@ class CRRSerializer(serializers.ModelSerializer):
 class CRRReadSerializer(serializers.ModelSerializer): 
     agent = AgentsSerializer(required=False)
     hub = HubsSerializer(required=False)
-    vessel = CustomerVesselsSerializer(required=False)
+    vessel = CustomerVesselsReadSerializer(required=False)
     supplier = SuppliersSerializer(required=False)
     country = CountriesSerializer(required=False)
     currency = CurrenciesSerializer(required=False)
+    register_by = UserSerializer(read_only=True)
+    display_status = serializers.CharField(source='get_status_display', read_only=True)
     class Meta:
         model = CRR
         fields = '__all__'

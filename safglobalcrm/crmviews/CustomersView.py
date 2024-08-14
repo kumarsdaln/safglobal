@@ -20,7 +20,7 @@ class CustomersList(generics.ListAPIView):
         # Retrieve query parameters for filtering, for instance, 'name'
         search = self.request.query_params.get('search', None)
         sortby = self.request.query_params.get('sortby', 'id')
-        sortdirection = self.request.query_params.get('sortdirection', 'asc')
+        sortdirection = self.request.query_params.get('sortdirection', 'desc')
 
         if sortdirection == 'desc':
             sortby = '-' + sortby
@@ -107,8 +107,18 @@ class CustomersUsersDelete(generics.DestroyAPIView):
 class CustomersVesselsCreate(generics.CreateAPIView):
     serializer_class = CustomerVesselsSerializer
     permission_classes = [IsAuthenticated]
+    def perform_create(self, serializer):
+        customers_vessels = serializer.save()
+        account_manager_ids = json.loads(self.request.data.get('account_manager', []))  # Get tag IDs from request data
+        account_manager = CustomerUsers.objects.filter(id__in=account_manager_ids)
+        customers_vessels.account_manager.set(account_manager)  # Add tags to the article
+class CustomersVesselsDetails(generics.RetrieveAPIView):
+    serializer_class = CustomerVesselsReadSerializer
+    queryset = CustomerVessels.objects.all()
+    permission_classes = [IsAuthenticated]   
+        
 class CustomersVesselsList(generics.ListAPIView):
-    serializer_class = CustomerVesselsSerializer
+    serializer_class = CustomerVesselsReadSerializer
     permission_classes = [IsAuthenticated]
     def get_queryset(self):
         queryset = CustomerVessels.objects.all()
@@ -127,7 +137,10 @@ class CustomersVesselsUpdate(generics.UpdateAPIView):
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        customers_vessels = serializer.save()
+        account_manager_ids = json.loads(self.request.data.get('account_manager', []))  # Get tag IDs from request data
+        account_manager = CustomerUsers.objects.filter(id__in=account_manager_ids)
+        customers_vessels.account_manager.set(account_manager)  # Add tags to the article
         return Response(serializer.data)
 class CustomersVesselsDelete(generics.DestroyAPIView):
     queryset = CustomerVessels.objects.all()

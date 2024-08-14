@@ -88,6 +88,7 @@ urlpatterns = [
         path('vessels/', include([
             path('', CustomersVesselsList.as_view(), name='crm.customers.vessels.list'),
             path('create/', CustomersVesselsCreate.as_view(), name='crm.customers.vessels.create'),
+            path('<int:pk>/', CustomersVesselsDetails.as_view(), name='crm.customers.vessels.details'),
             path('<int:pk>/edit/', CustomersVesselsUpdate.as_view(), name='crm.customers.vessels.edit'),
             path('<int:pk>/delete/', CustomersVesselsDelete.as_view(), name='crm.customers.vessels.delete'),
         ])),

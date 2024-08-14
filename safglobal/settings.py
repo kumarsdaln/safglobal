@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'safglobalapp',
     'safglobalcrm',
+    'django_admin_logs',
 ]
 
 MIDDLEWARE = [
