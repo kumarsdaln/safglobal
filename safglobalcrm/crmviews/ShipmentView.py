@@ -20,9 +20,11 @@ class ShipmentList(generics.ListAPIView):
         queryset = Shipment.objects.all()
 
         # Retrieve query parameters for filtering, for instance, 'name'
+        dont_show_on_pre_alert = self.request.query_params.get('dont_show_on_pre_alert', None)
+        mark_as_arrived = self.request.query_params.get('mark_as_arrived', None)
         search = self.request.query_params.get('search', None)
         sortby = self.request.query_params.get('sortby', 'id')
-        sortdirection = self.request.query_params.get('sortdirection', 'asc')
+        sortdirection = self.request.query_params.get('sortdirection', 'desc')
 
         if sortdirection == 'desc':
             sortby = '-' + sortby
@@ -30,12 +32,21 @@ class ShipmentList(generics.ListAPIView):
         if search is not None:
             # Apply filtering based on the 'name' parameter
             queryset = queryset.filter(Q(name__icontains=search) | Q(company_id__icontains=search) | Q(customer_number__icontains=search))
+        if dont_show_on_pre_alert is not None:
+            queryset = queryset.filter(dont_show_on_pre_alert=dont_show_on_pre_alert)     
+        if mark_as_arrived is not None:
+            queryset = queryset.filter(mark_as_arrived=mark_as_arrived)  
         queryset = queryset.order_by(sortby)    
         return queryset
     
 class ShipmentCreate(generics.CreateAPIView):
     serializer_class = ShipmentSerializer
     permission_classes = [IsAuthenticated]
+    def perform_create(self, serializer):
+        shipment = serializer.save()
+        crr_ids = json.loads(self.request.data.get('stock_items', []))  # Get tag IDs from request data
+        stock_items = CRR.objects.filter(id__in=crr_ids)
+        shipment.stock_items.set(stock_items)  # Add tags to the article
 
 class ShipmentDetails(generics.RetrieveAPIView):
     serializer_class = ShipmentReadSerializer
@@ -46,12 +57,42 @@ class ShipmentUpdate(generics.UpdateAPIView):
     queryset = Shipment.objects.all()
     serializer_class = ShipmentSerializer
     permission_classes = [IsAuthenticated]
+    def patch(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        shipment = serializer.save()
 
+        # Update stock items
+        crr_ids = json.loads(request.data.get('stock_items', '[]'))
+        service = request.data.get('service', None)
+        print(service)
+        if service is not None:
+            if service == 'A':
+                ShipmentServiceDetails.objects.filter(shipment=shipment).exclude(air__isnull=False).delete()
+            elif service == 'S':
+                ShipmentServiceDetails.objects.filter(shipment=shipment).exclude(sea__isnull=False).delete()
+            elif service == 'T':
+                ShipmentServiceDetails.objects.filter(shipment=shipment).exclude(truck__isnull=False).delete()
+            elif service == 'C':
+                ShipmentServiceDetails.objects.filter(shipment=shipment).exclude(coriers__isnull=False).delete()
+            elif service == 'R':
+                ShipmentServiceDetails.objects.filter(shipment=shipment).exclude(release__isnull=False).delete()
+            elif service == 'O':
+                ShipmentServiceDetails.objects.filter(shipment=shipment).exclude(on_board__isnull=False).delete()
+        stock_items = CRR.objects.filter(id__in=crr_ids)
+        shipment.stock_items.set(stock_items)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
     def put(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        shipment = serializer.save()
+        crr_ids = json.loads(self.request.data.get('stock_items', []))  # Get tag IDs from request data\
+        print(crr_ids)
+        stock_items = CRR.objects.filter(id__in=crr_ids)
+        shipment.stock_items.set(stock_items)
         return Response(serializer.data)
     
 class ShipmentDelete(generics.DestroyAPIView):
@@ -67,9 +108,18 @@ class ShipmentDelete(generics.DestroyAPIView):
     
 #Shipment Service Details
 class ShipmentServiceDetailsList(generics.ListAPIView):
+    pagination_class = None
     queryset = ShipmentServiceDetails.objects.all()
     serializer_class = ShipmentServiceDetailsSerializer
     permission_classes = [IsAuthenticated]
+    def get_queryset(self):
+        queryset = ShipmentServiceDetails.objects.all()
+        # Retrieve query parameters for filtering, for instance, 'name'
+        shipment_filter = self.request.query_params.get('shipment', None)
+        if shipment_filter is not None:
+            # Apply filtering based on the 'name' parameter
+            queryset = queryset.filter(shipment=shipment_filter)
+        return queryset
 
 class ShipmentServiceDetailsCreate(generics.CreateAPIView):
     serializer_class = ShipmentServiceDetailsSerializer

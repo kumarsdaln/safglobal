@@ -9,4 +9,4 @@ admin.site.register([Countries,States,Cities,Currencies,
                      Suppliers,SupplierEmails,SupplierAdditionalOfficeAddress,
                      Customers,CustomerEmails,CustomerPostalAddress,CustomerVessels,CustomerUsers,
                      OtherCompanies,OtherCompanyEmails,OtherCompaniesAdditionalOfficeAddress,
-                     ShipmentDeparture,ShipmentConsignee,Shipment])
+                     ShipmentDeparture,ShipmentConsignee,Shipment,ShipmentServiceDetails,Air,Sea,Truck,Coriers,Release,OnBoard])

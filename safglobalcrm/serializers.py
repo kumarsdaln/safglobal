@@ -653,6 +653,31 @@ class OtherCompaniesReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = OtherCompanies
         fields = '__all__' 
+#CRR
+class CRRSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CRR
+        fields = '__all__'
+class CRRReadSerializer(serializers.ModelSerializer): 
+    agent = AgentsSerializer(required=False)
+    hub = HubsSerializer(required=False)
+    vessel = CustomerVesselsReadSerializer(required=False)
+    supplier = SuppliersSerializer(required=False)
+    country = CountriesSerializer(required=False)
+    currency = CurrenciesSerializer(required=False)
+    register_by = UserSerializer(read_only=True)
+    display_status = serializers.CharField(source='get_status_display', read_only=True)
+    class Meta:
+        model = CRR
+        fields = '__all__'
+class CRRStockItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CRRStockItem
+        fields = '__all__'
+class CRRDocumentsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CRRDocuments
+        fields = '__all__'        
 
 #Shipment    
 class ShipmentDepartureSerializer(serializers.ModelSerializer):
@@ -672,6 +697,7 @@ class ShipmentConsigneeSerializer(serializers.ModelSerializer):
 class ShipmentSerializer(serializers.ModelSerializer):
     departure = ShipmentDepartureSerializer(required=False)
     consignee = ShipmentConsigneeSerializer(required=False)
+    stock_items = CRRSerializer(many=True, required=False)
     class Meta:
         model = Shipment
         fields = '__all__'
@@ -928,28 +954,3 @@ class ShipmentServiceDetailsSerializer(serializers.ModelSerializer):
         return instance
     
 
-#CRR
-class CRRSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CRR
-        fields = '__all__'
-class CRRReadSerializer(serializers.ModelSerializer): 
-    agent = AgentsSerializer(required=False)
-    hub = HubsSerializer(required=False)
-    vessel = CustomerVesselsReadSerializer(required=False)
-    supplier = SuppliersSerializer(required=False)
-    country = CountriesSerializer(required=False)
-    currency = CurrenciesSerializer(required=False)
-    register_by = UserSerializer(read_only=True)
-    display_status = serializers.CharField(source='get_status_display', read_only=True)
-    class Meta:
-        model = CRR
-        fields = '__all__'
-class CRRStockItemSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CRRStockItem
-        fields = '__all__'
-class CRRDocumentsSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CRRDocuments
-        fields = '__all__'        
