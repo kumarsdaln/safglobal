@@ -10,6 +10,8 @@ from .crmviews.CustomersView import *
 from .crmviews.OtherCompaniesView import *
 from .crmviews.ShipmentView import *
 from .crmviews.CRRView import *
+from .crmviews.UserProfileView import *
+from .crmviews.ActivityView import *
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
@@ -21,6 +23,7 @@ urlpatterns = [
     path('token/verify/', TokenVerifyView.as_view(), name='token_verify'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('login/', obtain_auth_token, name='crm.login'),
+    path('user/', UserDetailView.as_view(), name='user_detail'),
     path('countries/', views.CountriesList.as_view(), name='crm.counties.list'),
     path('states/', views.StatesList.as_view(), name='crm.state.list'),
     path('cities/', views.CitiesList.as_view(), name='crm.cities.list'),
@@ -131,5 +134,6 @@ urlpatterns = [
             path('<int:pk>/edit/', CRRDocumentsUpdate.as_view(), name='crm.crr.documents.edit'),
             path('<int:pk>/delete/', CRRDocumentsDelete.as_view(), name='crm.crr.documents.delete'),
         ])),
+        path('activity/', ActivityList.as_view(), name='crm.crr.activity'),
     ])),
 ]

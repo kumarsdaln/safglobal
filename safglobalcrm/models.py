@@ -4,6 +4,8 @@ from django.dispatch import receiver
 from rest_framework.authtoken.models import Token
 from django.conf import settings
 from django.contrib.auth.models import User
+import datetime
+from django.utils import timezone
 
 # Create your models here.
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
@@ -436,6 +438,8 @@ class Shipment(models.Model):
     shipment_status = models.CharField(max_length=10, choices=SHIPMENT_STATUS_CHOICES)
     mark_as_arrived = models.BooleanField(default=0)
     stock_items = models.ManyToManyField(CRR)
+    created_at = models.DateTimeField(default=datetime.datetime.now)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE, default=1)
 
 class Air(models.Model):
     airway_bill = models.CharField(max_length=100)
@@ -472,3 +476,18 @@ class ShipmentServiceDetails(models.Model):
     release = models.ForeignKey(Release, on_delete=models.SET_NULL, null=True)
     on_board = models.ForeignKey(OnBoard, on_delete=models.SET_NULL, null=True)
 
+class Activity(models.Model):
+    ACTION_CHOICES = [
+        ('ADD', 'Add'),
+        ('EDIT', 'Edit'),
+        ('DELETE', 'Delete')
+    ]
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)
+    action = models.CharField(max_length=6, choices=ACTION_CHOICES)
+    model_name = models.CharField(max_length=100)
+    object_id = models.PositiveIntegerField()
+    changes = models.JSONField(null=True, blank=True)
+    timestamp = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"{self.user} {self.action} {self.model_name} {self.object_id}"

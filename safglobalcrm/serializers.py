@@ -8,7 +8,6 @@ from django.contrib.auth.models import User
 
 class UserSerializer(serializers.ModelSerializer):
     full_name = serializers.SerializerMethodField()
-
     class Meta:
         model = User
         fields = ['id', 'username', 'first_name', 'last_name', 'email', 'full_name']
@@ -719,6 +718,7 @@ class ShipmentSerializer(serializers.ModelSerializer):
         return validated_data  
         
     def create(self, validated_data):
+        request = self.context.get('request')
         departure = validated_data.pop('departure',None)
         consignee = validated_data.pop('consignee',None)
         departure_in = validated_data['departure_in']
@@ -744,7 +744,7 @@ class ShipmentSerializer(serializers.ModelSerializer):
                 agent = get_object_or_404(Agents, id=consignee)
                 consignee = ShipmentConsignee.objects.create(consignee_from_agent=agent)
 
-            shipment = Shipment.objects.create(departure=departure, consignee=consignee, **validated_data)   
+            shipment = Shipment.objects.create(departure=departure, consignee=consignee, created_by = request.user, **validated_data)   
         return shipment
     
     def update(self, instance, validated_data):
@@ -811,6 +811,7 @@ class ShipmentReadSerializer(serializers.ModelSerializer):
     consignee = ShipmentConsigneeSerializer(required=False)
     display_shipment_status = serializers.CharField(source='get_shipment_status_display', read_only=True)
     display_service = serializers.CharField(source='get_service_display', read_only=True)
+    created_by = UserSerializer(read_only=True)
     class Meta:
         model = Shipment
         fields = '__all__'
@@ -954,3 +955,8 @@ class ShipmentServiceDetailsSerializer(serializers.ModelSerializer):
         return instance
     
 
+class ActivitySerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    class Meta:
+        model = Activity
+        fields = ['id', 'user', 'action', 'model_name', 'object_id', 'changes', 'timestamp']
